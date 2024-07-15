@@ -1,0 +1,18 @@
+meta {
+  name: create accounts
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/accounts/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "owner":"msihem",
+    "currency": "USD"
+  }
+}

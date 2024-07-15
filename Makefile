@@ -20,3 +20,7 @@ test:
 	go test -v -cover ./...
 sqlc:
 	sqlc generate
+mock:
+	mockgen -package mock_db -destination  db/mock/store.go go_simplebank/db/sqlc Store
+server:
+	go run main.go

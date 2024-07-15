@@ -1,0 +1,23 @@
+meta {
+  name: list account
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/accounts?page_id=1&page_size=5
+  body: json
+  auth: none
+}
+
+query {
+  page_id: 1
+  page_size: 5
+}
+
+body:json {
+  {
+    "owner": "Owner",
+    "currency": "USD"
+  }
+}

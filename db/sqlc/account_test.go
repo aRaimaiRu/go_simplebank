@@ -1,18 +1,20 @@
-package db
+package db_test
 
 import (
 	"context"
 	"testing"
 	"time"
 
+	db "go_simplebank/db/sqlc"
 	"go_simplebank/util"
 
 	"github.com/stretchr/testify/require"
 )
 
-func CreateRandomAccount(t *testing.T) Account {
-	arg := CreateAccountParams{
-		Owner:    util.RandomOwner(),
+func CreateRandomAccount(t *testing.T) db.Account {
+	user := createRandomUser(t)
+	arg := db.CreateAccountParams{
+		Owner:    user.Username,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
@@ -30,7 +32,7 @@ func CreateRandomAccount(t *testing.T) Account {
 	return account
 }
 
-func TestCreateAccuotn(t *testing.T) {
+func TestCreateAccount(t *testing.T) {
 	CreateRandomAccount(t)
 }
 
@@ -52,7 +54,7 @@ func TestGetAccount(t *testing.T) {
 func TestUpdateAccount(t *testing.T) {
 	account1 := CreateRandomAccount(t)
 
-	arg := UpdateAccountParams{
+	arg := db.UpdateAccountParams{
 		ID:      account1.ID,
 		Balance: util.RandomMoney(),
 	}
@@ -80,12 +82,12 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestListAccounts(t *testing.T) {
-	var lastAccount Account
+	var lastAccount db.Account
 	for i := 0; i < 10; i++ {
 		lastAccount = CreateRandomAccount(t)
 	}
 
-	arg := ListAccountsParams{
+	arg := db.ListAccountsParams{
 		Owner:  lastAccount.Owner,
 		Limit:  5,
 		Offset: 0,
