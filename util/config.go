@@ -9,11 +9,12 @@ import (
 )
 
 type Config struct {
-	DBDriver            string        `mapstructure:"DB_DRIVER" default:"postgres"`
-	DBSource            string        `mapstructure:"DB_SOURCE" default:""`
-	ServerAddress       string        `mapstructure:"SERVER_ADDRESS" default:":8080"`
-	TokenSymmetricKey   string        `mapstructure:"TOKEN_SYMMETRIC_KEY" `
-	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION" `
+	DBDriver             string        `mapstructure:"DB_DRIVER" default:"postgres"`
+	DBSource             string        `mapstructure:"DB_SOURCE" default:""`
+	ServerAddress        string        `mapstructure:"SERVER_ADDRESS" default:":8080"`
+	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY" `
+	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION" `
+	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION`
 }
 
 // LoadConfig load configuration from environment variables
