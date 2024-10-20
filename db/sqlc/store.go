@@ -15,6 +15,38 @@ type SQLStore struct {
 	db *sql.DB
 }
 
+type (
+	UserRepository interface {
+		CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+		GetUser(ctx context.Context, username string) (User, error)
+	}
+	AccountRepository interface {
+		AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error)
+		CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+		DeleteAccount(ctx context.Context, id int64) error
+		GetAccount(ctx context.Context, id int64) (Account, error)
+		GetAccountForUpdate(ctx context.Context, id int64) (Account, error)
+		ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)
+		UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
+	}
+
+	EntryRepository interface {
+		CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error)
+		GetEntry(ctx context.Context, id int64) (Entry, error)
+		ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error)
+	}
+
+	TransferRepository interface {
+		CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
+		GetTransfer(ctx context.Context, id int64) (Transfer, error)
+		ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error)
+	}
+
+	SessionRepository interface {
+		CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
+	}
+)
+
 func NewStore(db *sql.DB) Store {
 	return &SQLStore{
 		db:      db,

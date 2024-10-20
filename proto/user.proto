@@ -1,0 +1,12 @@
+syntax = "proto3";
+package pb;
+import "google/protobuf/timestamp.proto"; // Import the necessary package
+
+option go_package = "go_simplebank/pb";
+
+message User {
+    string username = 1;
+    string fullname = 2;
+    string email = 3;
+    google.protobuf.Timestamp created_at = 4;
+}
