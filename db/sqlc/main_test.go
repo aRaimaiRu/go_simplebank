@@ -18,10 +18,11 @@ var testDB *sql.DB
 func TestMain(m *testing.M) {
 	fmt.Println("TestMain")
 	var err error
-	config, err := util.LoadConfig("../..")
+	config, err := util.LoadConfig("../..", "app.test")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
+	fmt.Println("config", config)
 	testDB, err = sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)

@@ -19,10 +19,10 @@ type Config struct {
 }
 
 // LoadConfig load configuration from environment variables
-func LoadConfig(path string) (config Config, err error) {
+func LoadConfig(path string, configName string) (config Config, err error) {
 	viper.AddConfigPath(path)
 	// app.env
-	viper.SetConfigName("app")
+	viper.SetConfigName(configName)
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
