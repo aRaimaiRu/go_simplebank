@@ -17,7 +17,7 @@ import (
 
 func main() {
 
-	config, err := util.LoadConfig(".", "app.dev")
+	config, err := util.LoadConfig(".", "app.")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
