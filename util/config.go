@@ -11,17 +11,18 @@ import (
 type Config struct {
 	DBDriver             string        `mapstructure:"DB_DRIVER" default:"postgres"`
 	DBSource             string        `mapstructure:"DB_SOURCE" default:""`
-	ServerAddress        string        `mapstructure:"SERVER_ADDRESS" default:":8080"`
+	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS" default:":8080"`
+	GRPCServerAddress    string        `mapstructure:"GRPC_SERVER_ADDRESS" default:":9090"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY" `
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION" `
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION`
 }
 
 // LoadConfig load configuration from environment variables
-func LoadConfig(path string) (config Config, err error) {
+func LoadConfig(path string, configName string) (config Config, err error) {
 	viper.AddConfigPath(path)
 	// app.env
-	viper.SetConfigName("app")
+	viper.SetConfigName(configName)
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()

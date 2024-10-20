@@ -19,16 +19,18 @@ type createUserRequest struct {
 }
 
 type userResponse struct {
-	Username string `json:"username"`
-	Fullname string `json:"full_name"`
-	Email    string `json:"email"`
+	Username  string    `json:"username"`
+	Fullname  string    `json:"full_name"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func newUserResponse(User db.User) userResponse {
 	return userResponse{
-		Username: User.Username,
-		Fullname: User.FullName,
-		Email:    User.Email,
+		Username:  User.Username,
+		Fullname:  User.FullName,
+		Email:     User.Email,
+		CreatedAt: User.CreatedAt,
 	}
 }
 func (server *Server) createUser(ctx *gin.Context) {

@@ -13,7 +13,6 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
 
 COPY db/migration ./db/migration
-COPY app.env .
 COPY wait-for.sh .
 COPY start.sh .
 
