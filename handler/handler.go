@@ -18,7 +18,7 @@ import (
 type Server struct {
 	config     util.Config
 	store      db.Store
-	tokenMaker token.Maker
+	TokenMaker token.Maker
 	Router     *gin.Engine
 }
 
@@ -28,7 +28,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 
-	server := &Server{store: store, tokenMaker: tokenMaker, config: config}
+	server := &Server{store: store, TokenMaker: tokenMaker, config: config}
 	gin.SetMode(gin.ReleaseMode)
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -39,19 +39,25 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 }
 
 func (server *Server) setupRouter() {
-	userUsecase := usecase.NewUserUseCaseService(server.store, server.store, server.tokenMaker)
+	userUsecase := usecase.NewUserUseCaseService(server.store, server.store, server.TokenMaker)
+	accountUsecase := usecase.NewAccountUsecase(server.store)
+	AccountHandlerService := NewAccountHandlerService(*accountUsecase)
+	tokenUsecase := usecase.NewTokenUsecase(server.store, server.TokenMaker, usecase.Config{AccessTokenDuration: server.config.AccessTokenDuration})
+	TokenHandlerService := NewTokenHandlerService(*tokenUsecase)
+	TransferUsecase := usecase.NewTransferUsecase(server.store)
+	TransferHandlerService := NewTransferHandlerService(*TransferUsecase)
 	UserHandlerService := NewUserHandlerService(userUsecase)
 	router := gin.Default()
 	router.POST("/users", UserHandlerService.createUser)
 	router.POST("/users/login", UserHandlerService.loginUser)
-	// router.POST("/tokens/renew_access", server.renewToken)
+	router.POST("/tokens/renew_access", TokenHandlerService.renewToken)
 
-	// authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes := router.Group("/").Use(AuthMiddleware(server.TokenMaker))
 
-	// authRoutes.POST("/accounts", server.createAccount)
-	// authRoutes.GET("/accounts/:id", server.getAccount)
-	// authRoutes.GET("/accounts", server.listAccounts)
-	// authRoutes.POST("/transfers", server.createTransfer)
+	authRoutes.POST("/accounts", AccountHandlerService.createAccount)
+	authRoutes.GET("/accounts/:id", AccountHandlerService.getAccount)
+	authRoutes.GET("/accounts", AccountHandlerService.listAccounts)
+	authRoutes.POST("/transfers", TransferHandlerService.createTransfer)
 	server.Router = router
 }
 

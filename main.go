@@ -2,9 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"go_simplebank/api"
 	db "go_simplebank/db/sqlc"
 	"go_simplebank/gapi"
+	"go_simplebank/handler"
 	"go_simplebank/pb"
 	"go_simplebank/util"
 	"log"
@@ -54,7 +54,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 }
 
 func runApiServer(config util.Config, store db.Store) {
-	server, err := api.NewServer(config, store)
+	server, err := handler.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server:", err)
 	}

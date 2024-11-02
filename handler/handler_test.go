@@ -2,8 +2,8 @@ package handler_test
 
 import (
 	"fmt"
-	"go_simplebank/api"
 	db "go_simplebank/db/sqlc"
+	"go_simplebank/handler"
 	"go_simplebank/util"
 	"os"
 	"testing"
@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newTestServer(t *testing.T, store db.Store) *api.Server {
+func newTestServer(t *testing.T, store db.Store) *handler.Server {
 	config := util.Config{
 		DBDriver:            "postgres",
 		DBSource:            "postgresql",
@@ -21,7 +21,7 @@ func newTestServer(t *testing.T, store db.Store) *api.Server {
 		AccessTokenDuration: time.Minute,
 	}
 
-	server, err := api.NewServer(config, store)
+	server, err := handler.NewServer(config, store)
 	require.NoError(t, err)
 	return server
 }

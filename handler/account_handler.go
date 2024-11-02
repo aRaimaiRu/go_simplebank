@@ -1,44 +1,49 @@
-package api
+package handler
 
 import (
 	"database/sql"
-	"errors"
-	db "go_simplebank/db/sqlc"
 	"go_simplebank/token"
+	"go_simplebank/usecase"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
 )
 
-type createAccountRequest struct {
+type (
+	AccountHandlerService interface {
+		createAccount(ctx *gin.Context)
+		getAccount(ctx *gin.Context)
+		listAccounts(ctx *gin.Context)
+	}
+
+	accounthandler struct {
+		accountUsecase usecase.AccountUsecase
+	}
+)
+
+type CreateAccountParam struct {
 	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
-func (server *Server) createAccount(ctx *gin.Context) {
-	var req createAccountRequest
+func NewAccountHandlerService(accountUsecase usecase.AccountUsecase) AccountHandlerService {
+	return &accounthandler{accountUsecase: accountUsecase}
+}
+
+func (h *accounthandler) createAccount(ctx *gin.Context) {
+	var req CreateAccountParam
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	arg := db.CreateAccountParams{
-		Owner:    authPayload.Username,
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*token.Payload)
+	usecaseReq := usecase.CreateAccountParam{
+		Owner:    req.Owner,
 		Currency: req.Currency,
-		Balance:  0,
 	}
-
-	account, err := server.store.CreateAccount(ctx, arg)
+	account, err := h.accountUsecase.CreateAccount(ctx, authPayload, usecaseReq)
 	if err != nil {
-		if pgErr, ok := err.(*pq.Error); ok {
-			switch pgErr.Code.Name() {
-			case "unique_violation", "foreign_key_violation":
-				ctx.JSON(http.StatusForbidden, errorResponse(err))
-				return
-			}
-		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -50,27 +55,25 @@ type getAccountRequest struct {
 	ID int64 `uri:"id" binding:"required,min=1"`
 }
 
-func (server *Server) getAccount(ctx *gin.Context) {
+func (h *accounthandler) getAccount(ctx *gin.Context) {
 	var req getAccountRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	account, err := server.store.GetAccount(ctx, req.ID)
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*token.Payload)
+	usecaseReq := usecase.GetAccountRequest{ID: req.ID}
+	account, err := h.accountUsecase.GetAccount(ctx, authPayload, usecaseReq)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	}
-	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	if account.Owner != authPayload.Username {
-		err := errors.New("account does not belong to the authenticated user")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -79,21 +82,19 @@ type listAccountsRequest struct {
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
-func (server *Server) listAccounts(ctx *gin.Context) {
+func (h *accounthandler) listAccounts(ctx *gin.Context) {
 	var req listAccountsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	arg := db.ListAccountsParams{
-		Owner:  authPayload.Username,
-		Limit:  req.PageSize,
-		Offset: (req.PageID - 1) * req.PageSize,
+	authPayload := ctx.MustGet(AuthorizationPayloadKey).(*token.Payload)
+	usecaseReq := usecase.ListAccountsRequest{
+		PageID:   req.PageID,
+		PageSize: req.PageSize,
 	}
-
-	accounts, err := server.store.ListAccounts(ctx, arg)
+	accounts, err := h.accountUsecase.ListAccounts(ctx, authPayload, usecaseReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
