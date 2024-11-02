@@ -15,7 +15,7 @@ import (
 
 type UserUseCaseService interface {
 	CreateUser(ctx context.Context, req CreateRequest) (db.User, usecase_error.IUseCaseError)
-	Login(ctx context.Context, req LoginRequest) (loginUserResponse, usecase_error.IUseCaseError)
+	Login(ctx context.Context, req LoginRequest, r *SessionDetail) (loginUserResponse, usecase_error.IUseCaseError)
 }
 
 type userUseCaseService struct {
@@ -61,6 +61,11 @@ type loginUserResponse struct {
 	User                 userResponse `json:"user"`
 }
 
+type SessionDetail struct {
+	UserAgent string
+	ClientIp  string
+}
+
 func newUserResponse(User db.User) userResponse {
 	return userResponse{
 		Username:  User.Username,
@@ -93,7 +98,7 @@ func (s *userUseCaseService) CreateUser(ctx context.Context, req CreateRequest) 
 	return user, nil
 }
 
-func (s *userUseCaseService) Login(ctx context.Context, req LoginRequest) (loginUserResponse, usecase_error.IUseCaseError) {
+func (s *userUseCaseService) Login(ctx context.Context, req LoginRequest, r *SessionDetail) (loginUserResponse, usecase_error.IUseCaseError) {
 	user, err := s.userRepository.GetUser(ctx, req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -121,8 +126,8 @@ func (s *userUseCaseService) Login(ctx context.Context, req LoginRequest) (login
 		ID:           refreshPayload.ID,
 		Username:     user.Username,
 		RefreshToken: refreshToken,
-		UserAgent:    "", // You need to pass the user agent from the request
-		ClientIp:     "", // You need to pass the client IP from the request
+		UserAgent:    r.UserAgent,
+		ClientIp:     r.ClientIp,
 		IsBlocked:    false,
 		ExpiresAt:    refreshPayload.ExpiredAt,
 	})

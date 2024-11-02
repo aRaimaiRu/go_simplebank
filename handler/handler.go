@@ -10,6 +10,8 @@ import (
 	"go_simplebank/usecase"
 	"go_simplebank/util"
 
+	usecase_error "go_simplebank/usecase/error"
+
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 )
@@ -67,6 +69,10 @@ func (server *Server) Start(addr string) error {
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
+}
+
+func errorResponseFromUsecase(err usecase_error.IUseCaseError) gin.H {
+	return gin.H{"error": err.Message()}
 }
 
 var validCurrency validator.Func = func(fl validator.FieldLevel) bool {

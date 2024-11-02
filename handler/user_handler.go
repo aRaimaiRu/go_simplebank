@@ -53,11 +53,16 @@ func (u *userhandler) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, (err))
 		return
 	}
-	u.userUsecase.CreateUser(ctx, usecase.CreateRequest{Username: req.Username,
+	user, err := u.userUsecase.CreateUser(ctx, usecase.CreateRequest{Username: req.Username,
 		Password: req.Password,
 		Fullname: req.Fullname,
 		Email:    req.Email,
 	})
+	if err != nil {
+		ctx.JSON(err.StatusCode(), errorResponseFromUsecase(err))
+		return
+	}
+	ctx.JSON(http.StatusOK, newUserResponse(user))
 }
 
 type loginUserRequest struct {
@@ -80,6 +85,9 @@ func (u *userhandler) loginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	u.userUsecase.Login(ctx, usecase.LoginRequest{Username: req.Username, Password: req.Password})
+	res, err := u.userUsecase.Login(ctx, usecase.LoginRequest{Username: req.Username, Password: req.Password}, &usecase.SessionDetail{UserAgent: ctx.GetHeader("User-Agent"), ClientIp: ctx.ClientIP()})
+	if err != nil {
+		ctx.JSON(err.StatusCode(), errorResponseFromUsecase(err))
+	}
+	ctx.JSON(http.StatusOK, res)
 }
